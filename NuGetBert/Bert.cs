@@ -35,16 +35,13 @@ namespace NuGetBert
                     continue;
                 }
                 ex_count = 3;
+                throw new Exception("Невозможно скачать файл с моделью");
             }
 
             session = new InferenceSession(modelPath);
 
         }
 
-        ~Bert()
-        {
-            session.Dispose();
-        }
 
         public async Task<string> GetAnswer(string question, CancellationToken token)
         {
@@ -80,9 +77,22 @@ namespace NuGetBert
                 sessionLock.Wait();
 
                 // Run session and send the input data in to get inference output. 
-                var output = session.Run(input);
 
+                IDisposableReadOnlyCollection<DisposableNamedOnnxValue> output;
+                try
+                {
+                    output = session.Run(input);
+                }
+                catch (Exception ex)
+                {
+                    sessionLock.Release();
+                    throw;
+                }
                 sessionLock.Release();
+                if (token.IsCancellationRequested)
+                {
+                    throw new Exception("Операция отменена.");
+                }
 
                 // Call ToList on the output.
                 // Get the First and Last item in the list.

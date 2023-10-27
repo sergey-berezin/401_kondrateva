@@ -10,7 +10,7 @@ namespace MyApp
             var answer = await model.GetAnswer(question, cts.Token);
             Console.WriteLine($"{question}: {answer}");
         }
-        static async Task Main(string[] args)
+        static async  Task Main(string[] args)
         {
             if (args.Length == 0)
             {
