@@ -7,41 +7,55 @@ using System.Threading;
 using System;
 using System.Net;
 using static System.Net.WebRequestMethods;
+using System.Xml;
 
 namespace NuGetBert
 {
     public class Bert
     {
-        public string text;
+        public string text = "";
         private InferenceSession session;
         static SemaphoreSlim sessionLock = new SemaphoreSlim(1, 1);
 
-        public Bert(string textPath)
+        public Bert() { }
+
+        public async Task ModelLoader(CancellationToken token)
         {
-            this.text = System.IO.File.ReadAllText(textPath);
-            var modelPath = "bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
-            var ex_count = 0;
-            while (ex_count < 3)
+            await Task.Factory.StartNew(() =>
             {
-                try
+                var modelPath = "bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
+                var ex_count = 0;
+                while (ex_count < 3)
                 {
-                    var myWebClient = new WebClient();
-                    string addres = "https://storage.yandexcloud.net/dotnet4/bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
-                    myWebClient.DownloadFile(addres, modelPath);
+                    if (token.IsCancellationRequested)
+                    {
+                        throw new Exception("Загрузка модели отменена.");
+                    }
+                    try
+                    {
+                        var myWebClient = new WebClient();
+                        string addres = "https://storage.yandexcloud.net/dotnet4/bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
+                        myWebClient.DownloadFile(addres, modelPath);
+                        
+                    }
+                    catch
+                    {
+                        ex_count++;
+                        continue;
+                    }
+                    break;
                 }
-                catch
-                {
-                    ex_count++;
-                    continue;
-                }
-                ex_count = 3;
-                throw new Exception("Невозможно скачать файл с моделью");
-            }
+                if (ex_count == 3)
+                { throw new Exception("Не удалось скачать файл с моделью."); }
 
-            session = new InferenceSession(modelPath);
-
+                session = new InferenceSession(modelPath);
+            }, token);
         }
 
+        public void TextInitializer(string textPath)
+        {
+            text = System.IO.File.ReadAllText(textPath);
+        }
 
         public async Task<string> GetAnswer(string question, CancellationToken token)
         {
@@ -89,6 +103,7 @@ namespace NuGetBert
                     throw;
                 }
                 sessionLock.Release();
+                
                 if (token.IsCancellationRequested)
                 {
                     throw new Exception("Операция отменена.");

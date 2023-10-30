@@ -1,0 +1,40 @@
+﻿<Window x:Class="WpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp"
+        mc:Ignorable="d"
+                Title="MainWindow" Height="600" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0">
+            <ListBox ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" 
+						 Name="MessagesList" Focusable="False"
+						 HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <ListBoxItem>
+                            <Border HorizontalAlignment="{Binding Alignment}">
+                                <TextBlock Text="{Binding Text}"/>
+                            </Border>
+                        </ListBoxItem>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <Border Grid.Row="1">
+            <StackPanel Orientation="Horizontal" Height="30" >
+                <TextBox x:Name="questionTextBox"  Width="400" />
+                <Button Content="Get answer" Click="AnswerButton_Click" x:Name="answerButton" />
+                <Button Content="Load" Click="LoadFileButton_Click" x:Name="loadButton" />
+                <Button Content="Cancel" Click="CancelButton_Click" x:Name="cancelButton" IsEnabled="True" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
