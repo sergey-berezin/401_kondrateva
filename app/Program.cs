@@ -17,7 +17,9 @@ namespace MyApp
                 return;
             }
             string textPath = args[0];
-            var model = new Bert(textPath);
+            var model = new Bert();
+            await model.ModelLoader(cts.Token);
+            model.TextInitializer(textPath);
             Console.WriteLine("session started");
             var tasks = new List<Task>();
             var question = "";
@@ -26,7 +28,6 @@ namespace MyApp
                 tasks.Add(PrintAnswer(question, model, cts));
             }
             await Task.WhenAll(tasks);
-
         }
     }
 }
